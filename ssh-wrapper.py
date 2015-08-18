@@ -105,7 +105,10 @@ def get_key_from_commandline():
         return
 
     f = open(config_file, 'r')
-    return get_key_from_config(f, args[0].hostname)
+    hostname = args[0].hostname
+    if '@' in hostname:
+        hostname = hostname.split('@')[-1]
+    return get_key_from_config(f, hostname)
 
 
 def get_key():
