@@ -77,7 +77,7 @@ def get_key_from_config(filehandle, hostname):
         if not line:
             continue
         if line.lower().startswith("host "):
-            if hostname in line.lower():
+            if hostname in line[5:].lower().split():
                 found = True
                 continue
             else:
@@ -123,7 +123,6 @@ if __name__ == '__main__':
 
 
     args = ("ssh",) + tuple(sys.argv[1:])
-    print("ssh %s" % ' '.join(args))
     os.execv(SSH, args)
 
 
