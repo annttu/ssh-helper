@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 
@@ -29,7 +29,7 @@ def start_agent(key):
     outfile.write(infile.read())
     infile.close()
     outfile.close()
-    os.chmod(agent, 0700)
+    os.chmod(agent, 0o0700)
     p = subprocess.Popen([agent, '-a', agent_socket])
     p.wait()
     if p.returncode != 0:
