@@ -8,6 +8,7 @@ Parse ssh command and set proper environment variables for ssh command
 
 import sys
 import os
+import os.path
 import subprocess
 import argparse
 
@@ -23,6 +24,8 @@ def get_agent_socket(key):
 def start_agent(key):
     # Copy agent binary to alter binary name in keychain.
     agent_socket = get_agent_socket(key)
+    if os.path.exists(agent_socket):
+        os.remove(agent_socket)
     agent = os.path.join(AGENTS_DIR, "ssh-agent-%s" % key)
     infile = open(SSH_AGENT, 'rb')
     outfile = open(agent, 'wb')
@@ -90,8 +93,9 @@ def get_key_from_config(filehandle, hostname):
 
 def get_key_from_commandline():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i')
-    parser.add_argument('-o')
+    # Arguments with value
+    for arg in 'bcDEeFiILlMmOopQRSWw':
+        parser.add_argument('-%s' % arg)
     parser.add_argument('hostname')
 
     args = parser.parse_known_args()
