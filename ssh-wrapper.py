@@ -5,18 +5,23 @@
 Parse ssh command and set proper environment variables for ssh command
 
 """
-
-import sys
 import os
-import os.path
-import subprocess
-import argparse
 
+# --- Configuration begins ---
 
 SSH="/usr/local/bin/ssh"
 SSH_AGENT="/usr/local/bin/ssh-agent"
 SSH_ADD="/usr/local/bin/ssh-add"
 AGENTS_DIR=os.path.expanduser("~/.ssh/agents")
+
+# --- Configuration ends ---
+
+
+import sys
+import os.path
+import subprocess
+import argparse
+
 
 def get_agent_socket(key):
     return os.path.join(AGENTS_DIR, key)
@@ -72,21 +77,18 @@ def get_or_start_agent(key):
             start_agent(key)
     set_environment(key)
 
-def get_key_from_config(filehandle, hostname):
+def get_key_from_config(hostname):
     hostname = hostname.lower()
     found = False
-    for line in filehandle.readlines():
+    config_p = subprocess.Popen([SSH, '-G', hostname], stdout=subprocess.PIPE)
+    (stdout, stderr) = config_p.communicate()
+    retval = config_p.wait()
+    if retval != 0:
+        print("Unexpected error occured with %s -G %s" % (SSH, hostname))
+        return None
+    for line in stdout.decode("utf-8").splitlines():
         line = line.strip()
         if not line:
-            continue
-        if line.lower().startswith("host "):
-            if hostname in line[5:].lower().split():
-                found = True
-                continue
-            else:
-                found = False
-                continue
-        if not found:
             continue
         if line.lower().startswith("identityfile "):
             return line.split()[1]
@@ -103,16 +105,10 @@ def get_key_from_commandline():
     if args[0].i:
         return args[0].i
 
-    config_file = os.path.expanduser("~/.ssh/config")
-
-    if not os.path.isfile(config_file):
-        return
-
-    f = open(config_file, 'r')
     hostname = args[0].hostname
     if '@' in hostname:
         hostname = hostname.split('@')[-1]
-    return get_key_from_config(f, hostname)
+    return get_key_from_config(hostname)
 
 
 def get_key():
