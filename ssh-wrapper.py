@@ -55,9 +55,12 @@ def agent_alive(key):
     env['SSH_AUTH_SOCK'] = agent_socket
     p = subprocess.Popen([SSH_ADD, '-l'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     p.wait()
-    if p.returncode != 0:
+    if p.returncode == 2:
         debug("Agent is dead!")
         return False
+    elif p.returncode == 1:
+        # No keys, but alive
+        return True
     return True
 
 def clear_environment():
