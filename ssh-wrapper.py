@@ -22,6 +22,11 @@ import os.path
 import subprocess
 import argparse
 
+def debug(msg):
+    sys.stderr.write(msg)
+    sys.stderr.write("\n")
+    sys.stderr.flush()
+
 
 def get_agent_socket(key):
     return os.path.join(AGENTS_DIR, key)
@@ -41,7 +46,7 @@ def start_agent(key):
     p = subprocess.Popen([agent, '-a', agent_socket])
     p.wait()
     if p.returncode != 0:
-        print("Failed to initialize agent!")
+        debug("Failed to initialize agent!")
         sys.exit(1)
 
 def agent_alive(key):
@@ -51,7 +56,7 @@ def agent_alive(key):
     p = subprocess.Popen([SSH_ADD, '-l'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     p.wait()
     if p.returncode != 0:
-        print("Agent is dead!")
+        debug("Agent is dead!")
         return False
     return True
 
@@ -84,7 +89,7 @@ def get_key_from_config(hostname):
     (stdout, stderr) = config_p.communicate()
     retval = config_p.wait()
     if retval != 0:
-        print("Unexpected error occured with %s -G %s" % (SSH, hostname))
+        debug("Unexpected error occured with %s -G %s" % (SSH, hostname))
         return None
     for line in stdout.decode("utf-8").splitlines():
         line = line.strip()
@@ -114,6 +119,9 @@ def get_key_from_commandline():
 def get_key():
     keyfile = get_key_from_commandline()
     if keyfile:
+        if not os.path.exists(keyfile):
+            debug("Key %s does not exist" % keyfile)
+            return
         get_or_start_agent(keyfile)
 
 
