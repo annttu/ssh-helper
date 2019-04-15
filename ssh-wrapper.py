@@ -6,13 +6,15 @@ Parse ssh command and set proper environment variables for ssh command
 
 """
 import os
+from shutil import which
+
 
 # --- Configuration begins ---
 
 SSH="/usr/local/bin/ssh"
 SSH_AGENT="/usr/local/bin/ssh-agent"
 SSH_ADD="/usr/local/bin/ssh-add"
-SSH_ADD_KEY="/Users/annttu-tyo/bin/ssh-add-key"
+SSH_ADD_KEY=which("ssh-add-key")
 AGENTS_DIR=os.path.expanduser("~/.ssh/agents")
 
 # --- Configuration ends ---
@@ -125,22 +127,10 @@ def get_config(hostname):
 def get_key_from_config(hostname):
     hostname = hostname.lower()
     found = False
-#    config_p = subprocess.Popen([SSH, '-G', hostname], stdout=subprocess.PIPE)
-#    (stdout, stderr) = config_p.communicate()
-#    retval = config_p.wait()
-#    if retval != 0:
-#        debug("Unexpected error occured with %s -G %s" % (SSH, hostname))
-#        return None
     config = get_config(hostname)
     if not config:
         debug("Unexpected error occured with get_config")
         return None
-    #for line in config.splitlines():
-    #    line = line.strip()
-    #    if not line:
-    #        continue
-    #    if line.lower().startswith("identityfile "):
-    #        return line.split()[1]
     return config.get('identityfile', None)
 
 def get_localcommand(hostname):
